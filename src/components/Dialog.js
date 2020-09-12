@@ -4,9 +4,9 @@ import TextField from "@material-ui/core/TextField";
 import Dialog from "@material-ui/core/Dialog";
 import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
-import DialogContentText from "@material-ui/core/DialogContentText";
 import DialogTitle from "@material-ui/core/DialogTitle";
 import DateFnsUtils from "@date-io/date-fns";
+import "date-fns";
 import * as uuid from "uuid";
 import {
   MuiPickersUtilsProvider,
@@ -19,6 +19,8 @@ import { ADD_ITEM, UPDATE_ITEM } from "../reducers/TasksReducer";
 
 import moment from "moment";
 
+// import TextField from "@material-ui/core/TextField";
+
 export default function DialogComponent(props) {
   const dispatch = useDispatch();
 
@@ -26,7 +28,7 @@ export default function DialogComponent(props) {
   const [item, setItem] = useState({
     title: "",
     // date: new Date("2014-08-18T21:11:54"),
-    date: "2020-09-12T13:27:23+05:30",
+    date: "",
   });
 
   useEffect(() => {
@@ -39,6 +41,7 @@ export default function DialogComponent(props) {
     props.setDialogState();
     if (props.currentItem) {
       dispatch({ type: UPDATE_ITEM, payload: item });
+      setItem({});
     } else {
       console.log(item.date);
       const payload = {
@@ -49,28 +52,25 @@ export default function DialogComponent(props) {
       dispatch({ type: ADD_ITEM, payload: payload });
     }
   };
+
   return (
     <div>
       {/* <Button variant="outlined" color="primary" onClick>
         Open form dialog
       </Button> */}
       <Dialog open={open} aria-labelledby="form-dialog-title">
-        <DialogTitle id="form-dialog-title">Edit</DialogTitle>
+        <DialogTitle id="form-dialog-title">Add/Edit</DialogTitle>
         <DialogContent>
-          <DialogContentText>
-            To subscribe to this website, please enter your email address here.
-            We will send updates occasionally.
-          </DialogContentText>
+          {/* <DialogContentText>Edit your journal here</DialogContentText> */}
           <TextField
             autoFocus
             margin="dense"
             id="name"
-            label="Email Address"
-            type="email"
             fullWidth
             value={item.title}
             onChange={(e) => setItem({ ...item, title: e.target.value })}
           />
+
           <MuiPickersUtilsProvider utils={DateFnsUtils}>
             <Grid container justify="space-around">
               <KeyboardDatePicker
@@ -79,20 +79,10 @@ export default function DialogComponent(props) {
                 label="Date picker dialog"
                 format="MM/dd/yyyy"
                 value={item.date}
-                onChange={(e) => setItem({ ...item, date: e })}
+                onChange={(e) => setItem({ ...item, date: e.toLocaleString() })}
+                value={item.date}
                 KeyboardButtonProps={{
                   "aria-label": "change date",
-                }}
-              />
-
-              <KeyboardTimePicker
-                margin="normal"
-                id="time-picker"
-                label="Time picker"
-                value={item.date}
-                onChange={(e) => setItem({ ...item, date: e })}
-                KeyboardButtonProps={{
-                  "aria-label": "change time",
                 }}
               />
             </Grid>
