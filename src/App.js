@@ -1,24 +1,25 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useState, useEffect } from "react";
+import "./App.css";
+import dummy from "./dummy.json";
+import { useDispatch, useSelector } from "react-redux";
+
+import { TableData } from "./components/TableData";
+import { LOAD_ALL_TASKS } from "./reducers/TasksReducer";
 
 function App() {
+  useEffect(() => {
+    console.log("fgfh");
+
+    dispatch({ type: LOAD_ALL_TASKS, payload: dummy });
+  }, []);
+
+  const dispatch = useDispatch();
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <div className="App-header">
+        <TableData />
+      </div>
     </div>
   );
 }
