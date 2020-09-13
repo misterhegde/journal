@@ -1,48 +1,53 @@
 import React, { useState, useEffect } from "react";
-import { makeStyles } from "@material-ui/core/styles";
-import Table from "@material-ui/core/Table";
-import TableBody from "@material-ui/core/TableBody";
-import TableCell from "@material-ui/core/TableCell";
-import TableContainer from "@material-ui/core/TableContainer";
-import TableHead from "@material-ui/core/TableHead";
-import TableRow from "@material-ui/core/TableRow";
-import Paper from "@material-ui/core/Paper";
+// import { makeStyles } from "@material-ui/core/styles";
+
 import Button from "@material-ui/core/Button";
 import DialogComponent from "./Dialog";
-import dummy from "../dummy.json";
-import moment from "moment";
-import AddCircleIcon from "@material-ui/icons/AddCircle";
-import EditIcon from "@material-ui/icons/Edit";
-import DeleteIcon from "@material-ui/icons/Delete";
-import _ from "lodash";
 
+import AddCircleIcon from "@material-ui/icons/AddCircle";
+import {
+  MuiPickersUtilsProvider,
+  KeyboardDatePicker,
+} from "@material-ui/pickers";
+import Grid from "@material-ui/core/Grid";
+import DateFnsUtils from "@date-io/date-fns";
 import { useDispatch, useSelector } from "react-redux";
 
-import { DELETE_ITEM, LOAD_ALL_TASKS } from "./../reducers/TasksReducer";
+import { DELETE_ITEM } from "./../reducers/TasksReducer";
+import MediaCard from "./CardComponent";
 
-const useStyles = makeStyles({
-  table: {
-    minWidth: 350,
-    maxWidth: "100%",
-  },
-});
+// const useStyles = makeStyles({
+//   table: {
+//     minWidth: 350,
+//     maxWidth: "100%",
+//   },
+// });
 
 export const TableData = () => {
   const allTasks = useSelector((state) => {
-    return state.taskReducer;
+    return state.task;
   });
 
   const [open, setOpen] = useState(false);
   const [rows, setRows] = useState();
   const [editItem, setEditItem] = useState("");
   const [search, setSearch] = useState("");
+  const [searchByDate, setSearchByDate] = useState("");
 
   const dispatch = useDispatch();
 
   useEffect(() => {
     setRows(allTasks);
   }, [allTasks]);
-  const classes = useStyles();
+
+  const editJournal = (item) => {
+    setEditItem(item);
+    setOpen(true);
+  };
+
+  const deleteJournal = (journalId) => {
+    dispatch({ type: DELETE_ITEM, payload: journalId });
+  };
 
   if (search === "") {
     var filtered = rows;
@@ -52,80 +57,82 @@ export const TableData = () => {
     );
   }
 
+  if (searchByDate === "") {
+    var filteredByDate = filtered;
+  } else {
+    filteredByDate = filtered.filter(
+      (element) => element.date === searchByDate
+    );
+  }
+
+  let cards =
+    filteredByDate &&
+    filteredByDate.map((row) => (
+      <MediaCard
+        id={row.id}
+        date={row.date}
+        title={row.title}
+        edit={editJournal}
+        deletekey={deleteJournal}
+        item={row}
+        image={row.image}
+      />
+    ));
+
   return (
     <>
-      <input
-        style={{ width: "100%", height: "35px", margin: "auto" }}
-        placeholder="Search"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-      />
+      <div>
+        <input
+          style={{ width: "90%", margin: " auto 10px ", height: "35px" }}
+          placeholder="Search"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+        <MuiPickersUtilsProvider utils={DateFnsUtils}>
+          <Grid container justify="space-around">
+            <KeyboardDatePicker
+              margin="normal"
+              format="MM/dd/yyyy"
+              value={searchByDate}
+              placeholder="Search by date"
+              onChange={(e) => setSearchByDate(e.toLocaleString())}
+              KeyboardButtonProps={{
+                "aria-label": "change date",
+              }}
+            />
+            <button onClick={() => setSearchByDate("")}>clear date</button>
+          </Grid>
+        </MuiPickersUtilsProvider>
+      </div>
       <br />
       <br />
-      <br />
-      <div
-        style={{
-          position: "relative",
-        }}
-      >
-        {/* <Paper className="main"> */}
 
-        <TableContainer component={Paper}>
-          <Table className={classes.table} aria-label="simple table">
-            <TableHead>
-              <TableRow>
-                <TableCell>Date</TableCell>
-                <TableCell>Task/item</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {filtered &&
-                filtered.map((row) => (
-                  <TableRow key={row.id}>
-                    {/* <TableCell component="th" scope="row">
-                  {row.name}
-                </TableCell> */}
-                    <TableCell>{row.date}</TableCell>
-                    <TableCell>{row.title}</TableCell>
-                    <Button
-                      onClick={(e) => {
-                        setEditItem(row);
-                        setOpen(true);
-                      }}
-                    >
-                      <EditIcon fontSize="small" />
-                    </Button>
-                    <Button
-                      onClick={() =>
-                        dispatch({ type: DELETE_ITEM, payload: row.id })
-                      }
-                    >
-                      <DeleteIcon fontSize="small" />
-                    </Button>
-                  </TableRow>
-                ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-        <Button>
-          <AddCircleIcon
-            fontSize="large"
-            align="right"
-            onClick={() => {
-              setOpen(true);
-              setEditItem("");
-            }}
-            style={{ position: "absolute", right: "auto" }}
-          />
-        </Button>
-        {/* </Paper> */}
-
+      <div>
+        {cards}
         <DialogComponent
           open={open}
           setDialogState={() => setOpen(false)}
           currentItem={editItem}
         />
       </div>
+
+      <Button
+        style={{
+          position: "fixed",
+          right: "0%",
+          bottom: "0",
+          zIndex: "1",
+        }}
+      >
+        <AddCircleIcon
+          fontSize="large"
+          color="primary"
+          onClick={() => {
+            setOpen(true);
+            setEditItem("");
+          }}
+        />
+      </Button>
     </>
   );
 };

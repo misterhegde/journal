@@ -10,16 +10,11 @@ import "date-fns";
 import * as uuid from "uuid";
 import {
   MuiPickersUtilsProvider,
-  KeyboardTimePicker,
   KeyboardDatePicker,
 } from "@material-ui/pickers";
 import Grid from "@material-ui/core/Grid";
 import { useDispatch } from "react-redux";
 import { ADD_ITEM, UPDATE_ITEM } from "../reducers/TasksReducer";
-
-import moment from "moment";
-
-// import TextField from "@material-ui/core/TextField";
 
 export default function DialogComponent(props) {
   const dispatch = useDispatch();
@@ -29,6 +24,7 @@ export default function DialogComponent(props) {
     title: "",
     // date: new Date("2014-08-18T21:11:54"),
     date: "",
+    image: "",
   });
 
   useEffect(() => {
@@ -36,18 +32,39 @@ export default function DialogComponent(props) {
     setItem(props.currentItem);
   }, [props]);
 
-  // const someMethod
+  const convertBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const fileReader = new FileReader();
+      fileReader.readAsDataURL(file);
+
+      fileReader.onload = () => {
+        resolve(fileReader.result);
+      };
+
+      fileReader.onerror = (error) => {
+        reject(error);
+      };
+    });
+  };
+
+  const fileSelect = async (e) => {
+    const file = e.target.files[0];
+    const base64 = await convertBase64(file);
+    setItem({ ...item, image: base64 });
+    // console.log("base64", base64);
+  };
+
   const addOrEditTask = () => {
     props.setDialogState();
     if (props.currentItem) {
       dispatch({ type: UPDATE_ITEM, payload: item });
-      setItem({});
     } else {
       console.log(item.date);
       const payload = {
         id: uuid.v4(),
         title: item.title,
         date: item.date,
+        image: item.image,
       };
       dispatch({ type: ADD_ITEM, payload: payload });
     }
@@ -55,13 +72,9 @@ export default function DialogComponent(props) {
 
   return (
     <div>
-      {/* <Button variant="outlined" color="primary" onClick>
-        Open form dialog
-      </Button> */}
       <Dialog open={open} aria-labelledby="form-dialog-title">
         <DialogTitle id="form-dialog-title">Add/Edit</DialogTitle>
         <DialogContent>
-          {/* <DialogContentText>Edit your journal here</DialogContentText> */}
           <TextField
             autoFocus
             margin="dense"
@@ -70,6 +83,7 @@ export default function DialogComponent(props) {
             value={item.title}
             onChange={(e) => setItem({ ...item, title: e.target.value })}
           />
+          <input type="file" onChange={(e) => fileSelect(e)} />
 
           <MuiPickersUtilsProvider utils={DateFnsUtils}>
             <Grid container justify="space-around">
@@ -80,7 +94,6 @@ export default function DialogComponent(props) {
                 format="MM/dd/yyyy"
                 value={item.date}
                 onChange={(e) => setItem({ ...item, date: e.toLocaleString() })}
-                value={item.date}
                 KeyboardButtonProps={{
                   "aria-label": "change date",
                 }}
